@@ -1,5 +1,6 @@
-#include <iostream>
+#include "window.hpp"
 
 int main(){
-    std::cout << "Hello World\n";
+    cpRun();
+    cpQuit();
 }
