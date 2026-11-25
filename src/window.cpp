@@ -5,6 +5,7 @@
 #include "SDL_render.h"
 #include "SDL_timer.h"
 #include "SDL_video.h"
+#include "listeners.hpp"
 #include <utility>
 
 std::pair<bool, const char*> init();
@@ -25,6 +26,7 @@ void cpRun(){
         SDL_RenderClear(cpGetRenderer());
         SDL_RenderPresent(cpGetRenderer());
         
+        cpKUpdate();
         SDL_Delay(fps/1000);
     }
 }
@@ -34,6 +36,10 @@ void handleinputs(bool& running){
         switch (e.type) {
             case SDL_QUIT:
                 running=false;
+                break;
+            case SDL_KEYUP:
+            case SDL_KEYDOWN:
+                cpKReg(e.key);
                 break;
         }
     }
