@@ -23,12 +23,12 @@ void cpRun(){
     SDL_ShowWindow(cpGetWindow());
     while (running) {
         handleinputs(running);
-
         SDL_RenderClear(cpGetRenderer());
         img.draw();
         SDL_RenderPresent(cpGetRenderer());
         
         cpKUpdate();
+        cpMUpdate();
         SDL_Delay(fps/1000);
     }
 }
@@ -42,6 +42,16 @@ void handleinputs(bool& running){
             case SDL_KEYUP:
             case SDL_KEYDOWN:
                 cpKReg(e.key);
+                break;
+            case SDL_MOUSEMOTION:
+                cpMReg(e.motion);
+                break;
+            case SDL_MOUSEWHEEL:
+                cpMReg(e.wheel);
+                break;
+            case SDL_MOUSEBUTTONUP:
+            case SDL_MOUSEBUTTONDOWN:
+                cpMReg(e.button);
                 break;
         }
     }

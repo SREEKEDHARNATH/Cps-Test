@@ -35,3 +35,53 @@ void cpKUpdate(){
         prvkeys[i]=keys[i];
     }
 }
+
+bool buttons[3]={false},prvbuttons[3]={false};
+int x=0,y=0;
+float scrlx=0,scrly=0;
+
+void cpMReg(SDL_MouseMotionEvent m){
+    x=m.x;
+    y=m.y;
+}
+void cpMReg(SDL_MouseButtonEvent b){
+    auto bu = b.button;
+    if (bu >0 && bu < 4){
+        buttons[bu-1] = (b.state==SDL_PRESSED);
+    }
+}
+void cpMReg(SDL_MouseWheelEvent w){
+    scrlx=w.preciseX;
+    scrly=w.preciseY;
+}
+bool cpMIsPressed(int b){
+    if (b>0 && b<4){
+        return buttons[b-1] && !prvbuttons[b-1];
+    }
+    return false;
+}
+bool cpMIsDown(int b){
+    if (b>0 && b<4){
+        return buttons[b-1];
+    }
+    return false;
+}
+int cpMGetX(){
+    return x;
+}
+int cpMGetY(){
+    return y;
+}
+float cpMGetScrlx(){
+    return scrlx;
+}
+float cpMGetScrly(){
+    return scrly;
+}
+void cpMUpdate(){
+    for (int i=0;i<3;i++){
+        prvbuttons[i]=buttons[i];
+    }
+    scrlx=0;
+    scrly=0;
+}
