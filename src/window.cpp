@@ -1,29 +1,31 @@
 #include "window.hpp"
 #include "SDL.h"
-#include "SDL_error.h"
 #include "SDL_events.h"
+#include "SDL_image.h"
+#include "SDL_keycode.h"
 #include "SDL_render.h"
 #include "SDL_timer.h"
 #include "SDL_video.h"
+#include "api.hpp"
 #include "listeners.hpp"
-#include <utility>
 
-std::pair<bool, const char*> init();
+bool init();
 void handleinputs(bool& running);
 void cpRun(){
-    auto initres = init();
-    if (!initres.first){
-        LOG("Fix:- %s", initres.second);
+    if (!init()){
+        LOG();
         return;
     }
     bool running = true;
     float fps=240;
 
+    cpImage img(255,0,0);
     SDL_ShowWindow(cpGetWindow());
     while (running) {
         handleinputs(running);
 
         SDL_RenderClear(cpGetRenderer());
+        img.draw();
         SDL_RenderPresent(cpGetRenderer());
         
         cpKUpdate();
@@ -43,18 +45,25 @@ void handleinputs(bool& running){
                 break;
         }
     }
+    if (cpKIsPresed(SDLK_ESCAPE)){
+        running=false;
+    }
 }
-std::pair<bool, const char*> init(){
+bool init(){
+    int img_flags=IMG_INIT_JPG | IMG_INIT_PNG;
     if (SDL_Init(SDL_INIT_EVERYTHING)){
-        return {false,SDL_GetError()};
+        return false;
+    }
+    if ((IMG_Init(img_flags) & img_flags) != img_flags){
+        return false;
     }
     if (!(cpGetWindow() = SDL_CreateWindow(cpGetTitle(), SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,cpGetW(),cpGetH(),SDL_WINDOW_HIDDEN))){
-        return {false,SDL_GetError()};
+        return false;
     }
     if (!(cpGetRenderer() = SDL_CreateRenderer(cpGetWindow(),-1,0))){
-        return {false,SDL_GetError()};
+        return false;
     }
-    return {true,""};
+    return true;
 }
 void cpQuit(){
     if (cpGetRenderer()){
@@ -63,6 +72,7 @@ void cpQuit(){
     if (cpGetWindow()){
         SDL_DestroyWindow(cpGetWindow());
     }
+    IMG_Quit();
     SDL_Quit();
 }
 int cpGetW(){
