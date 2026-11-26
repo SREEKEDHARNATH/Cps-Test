@@ -3,6 +3,7 @@
 #include "SDL_render.h"
 #include <memory>
 #include "SDL_ttf.h"
+#include "SDL_mixer.h"
 
 class cpImage{
     std::shared_ptr<SDL_Texture> ptr;
@@ -39,4 +40,17 @@ class cpText{
         cpText(cpFont& f,const char* txt);
         void set(cpFont& f,const char* txt);
         const char* getText();
+};
+
+class cpSound{
+    std::shared_ptr<Mix_Chunk> ptr;
+    public:
+        int vol=50;
+        cpSound();
+        cpSound(const char* name);
+        cpSound(Mix_Chunk* m);
+        void set(const char* name);
+        void set(Mix_Chunk* m);
+        void play();
+        std::shared_ptr<Mix_Chunk> get();
 };

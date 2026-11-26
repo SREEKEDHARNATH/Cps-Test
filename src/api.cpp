@@ -1,4 +1,5 @@
 #include "api.hpp"
+#include "SDL_mixer.h"
 #include "SDL_pixels.h"
 #include "SDL_render.h"
 #include "SDL_surface.h"
@@ -146,4 +147,37 @@ void cpText::set(cpFont& f,const char* txt){
 }
 const char* cpText::getText(){
     return text.c_str();
+}
+
+cpSound::cpSound(){
+
+}
+cpSound::cpSound(const char* name){
+    set(name);
+}
+cpSound::cpSound(Mix_Chunk* m){
+    set(m);
+}
+void cpSound::set(const char* name){
+    auto m = Mix_LoadWAV(name);
+    if (!m){
+        LOG();
+        return;
+    }
+    ptr.reset(m, Mix_FreeChunk);
+}
+void cpSound::set(Mix_Chunk* m){
+    if (!m){
+        LOGARGS("nullptr given ar arg in cpSound");
+        return;
+    }
+    ptr.reset(m, Mix_FreeChunk);
+}
+void cpSound::play(){
+    if (get().get()){
+        Mix_PlayChannel(-1, get().get(),false);
+    }
+}
+std::shared_ptr<Mix_Chunk> cpSound::get(){
+    return ptr;
 }

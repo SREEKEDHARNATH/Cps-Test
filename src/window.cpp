@@ -3,6 +3,7 @@
 #include "SDL_events.h"
 #include "SDL_image.h"
 #include "SDL_keycode.h"
+#include "SDL_mixer.h"
 #include "SDL_render.h"
 #include "SDL_timer.h"
 #include "SDL_ttf.h"
@@ -20,6 +21,7 @@ void cpRun(){
 
     cpFont f("assets/font.ttf");
     cpText t(f,"Hello World");
+    
     bool running = true;
     float fps=240;
 
@@ -66,6 +68,7 @@ void handleinputs(bool& running){
 }
 bool init(){
     int img_flags=IMG_INIT_JPG | IMG_INIT_PNG;
+    int sound_flags=MIX_INIT_MP3;
     if (SDL_Init(SDL_INIT_EVERYTHING)){
         return false;
     }
@@ -73,6 +76,12 @@ bool init(){
         return false;
     }
     if (TTF_Init()){
+        return false;
+    }
+    if ((Mix_Init(sound_flags) & sound_flags) != sound_flags){
+        return false;
+    }
+    if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024)){
         return false;
     }
     if (!(cpGetWindow() = SDL_CreateWindow(cpGetTitle(), cpGetX(),cpGetY(),cpGetW(),cpGetH(),SDL_WINDOW_HIDDEN))){
@@ -90,6 +99,8 @@ void cpQuit(){
     if (cpGetWindow()){
         SDL_DestroyWindow(cpGetWindow());
     }
+    Mix_CloseAudio();
+    Mix_Quit();
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();

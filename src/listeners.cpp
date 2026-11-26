@@ -4,7 +4,6 @@
 #include "SDL_keycode.h"
 #include "SDL_mouse.h"
 #include "SDL_scancode.h"
-#include "window.hpp"
 
 bool keys[SDL_NUM_SCANCODES]={false};
 bool prvkeys[SDL_NUM_SCANCODES]={false};
