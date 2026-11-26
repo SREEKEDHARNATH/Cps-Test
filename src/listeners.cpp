@@ -2,7 +2,10 @@
 #include "SDL_events.h"
 #include "SDL_keyboard.h"
 #include "SDL_keycode.h"
+#include "SDL_mouse.h"
 #include "SDL_scancode.h"
+#include "window.hpp"
+
 bool keys[SDL_NUM_SCANCODES]={false};
 bool prvkeys[SDL_NUM_SCANCODES]={false};
 
@@ -53,6 +56,11 @@ void cpMReg(SDL_MouseButtonEvent b){
 void cpMReg(SDL_MouseWheelEvent w){
     scrlx=w.preciseX;
     scrly=w.preciseY;
+
+    if (w.direction == SDL_MOUSEWHEEL_FLIPPED){
+        scrlx*=-1;
+        scrlx*=-1;
+    }
 }
 bool cpMIsPressed(int b){
     if (b>0 && b<4){

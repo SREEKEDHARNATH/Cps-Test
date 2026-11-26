@@ -5,6 +5,7 @@
 #include "SDL_keycode.h"
 #include "SDL_render.h"
 #include "SDL_timer.h"
+#include "SDL_ttf.h"
 #include "SDL_video.h"
 #include "api.hpp"
 #include "listeners.hpp"
@@ -16,6 +17,9 @@ void cpRun(){
         LOG();
         return;
     }
+
+    cpFont f("assets/font.ttf");
+    cpText t(f,"Hello World");
     bool running = true;
     float fps=240;
 
@@ -25,6 +29,7 @@ void cpRun(){
         handleinputs(running);
         SDL_RenderClear(cpGetRenderer());
         img.draw();
+        t.i.draw();
         SDL_RenderPresent(cpGetRenderer());
         
         cpKUpdate();
@@ -67,7 +72,10 @@ bool init(){
     if ((IMG_Init(img_flags) & img_flags) != img_flags){
         return false;
     }
-    if (!(cpGetWindow() = SDL_CreateWindow(cpGetTitle(), SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,cpGetW(),cpGetH(),SDL_WINDOW_HIDDEN))){
+    if (TTF_Init()){
+        return false;
+    }
+    if (!(cpGetWindow() = SDL_CreateWindow(cpGetTitle(), cpGetX(),cpGetY(),cpGetW(),cpGetH(),SDL_WINDOW_HIDDEN))){
         return false;
     }
     if (!(cpGetRenderer() = SDL_CreateRenderer(cpGetWindow(),-1,0))){
@@ -82,6 +90,7 @@ void cpQuit(){
     if (cpGetWindow()){
         SDL_DestroyWindow(cpGetWindow());
     }
+    TTF_Quit();
     IMG_Quit();
     SDL_Quit();
 }
@@ -90,6 +99,12 @@ int cpGetW(){
 }
 int cpGetH(){
     return 720;
+}
+int cpGetX(){
+    return SDL_WINDOWPOS_CENTERED;
+}
+int cpGetY(){
+    return SDL_WINDOWPOS_CENTERED;
 }
 const char* cpGetTitle(){
     return "Cps Test";

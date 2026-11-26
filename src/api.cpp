@@ -2,6 +2,7 @@
 #include "SDL_pixels.h"
 #include "SDL_render.h"
 #include "SDL_surface.h"
+#include "SDL_ttf.h"
 #include "window.hpp"
 #include "SDL_image.h"
 
@@ -54,7 +55,7 @@ void cpImage::set(SDL_Texture* tex,bool autoset){
         }
     }
     else {
-        LOGARGS("nullptr given as texture in cpImage set function");
+        LOGARGS("nullptr gigivenven as texture in cpImage set function");
     }
 }
 void cpImage::draw(){
@@ -71,7 +72,78 @@ void cpImage::setdimensions(){
     if (get().get()){
         SDL_QueryTexture(get().get(), NULL,NULL,&r.w,&r.h);
     }
+    else {
+        LOGARGS("Set Texture in cpImage first the call setdimensions");
+    }
 }
 std::shared_ptr<SDL_Texture> cpImage::get(){
     return ptr;
+}
+
+cpFont::cpFont(){
+
+}
+cpFont::cpFont(const char* name, int ptsize){
+    set(name,ptsize);
+}
+cpFont::cpFont(TTF_Font* f){
+    set(f);
+}
+void cpFont::set(const char* name, int ptsize){
+    auto t =TTF_OpenFont(name, ptsize);
+    if (!t){
+        LOG();
+        return;
+    }
+    ptr.reset(t, TTF_CloseFont);
+}
+void cpFont::set(TTF_Font* f){
+    if (f){
+        ptr.reset(f, TTF_CloseFont);
+    }
+    else {
+        LOGARGS("nullptr given as font in cpFont set function");
+    }
+}
+std::shared_ptr<TTF_Font> cpFont::get(){
+    return ptr;
+}
+
+cpText::cpText(){
+
+}
+cpText::cpText(cpFont& f,const char* txt){
+    set(f,txt);
+}
+void cpText::set(cpFont& f,const char* txt){
+    if (std::string(txt) == ""){
+        LOGARGS("Text for cptext cant be empty");
+        return;
+    }
+    if (!f.get().get()){
+        LOGARGS("Font for cptext cant be invalid");
+        return;
+    }
+    auto surf = TTF_RenderUTF8_Blended(f.get().get(), txt, {255,255,255,255});
+    if (!surf){
+        LOG();
+        return;
+    }
+    auto tex=SDL_CreateTextureFromSurface(cpGetRenderer(), surf);
+    SDL_FreeSurface(surf);
+    if (!tex){
+        LOG();
+        return;
+    }
+    i.set(tex);
+    if ((i.r.x+i.r.w) > cpGetW()){
+        LOGARGS("Text is overlapping than window's width");
+    }
+    if ((i.r.y+i.r.h) > cpGetW()){
+        LOGARGS("Text is overlapping than window's height");
+    }
+    
+}
+const char* cpText::getText(){
+    return text.c_str();
 }
