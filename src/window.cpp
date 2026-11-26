@@ -10,6 +10,8 @@
 #include "SDL_video.h"
 #include "api.hpp"
 #include "listeners.hpp"
+#include "utils.hpp"
+#include <iostream>
 
 bool init();
 void handleinputs(bool& running);
@@ -20,8 +22,10 @@ void cpRun(){
     }
 
     cpFont f("assets/font.ttf");
-    cpText t(f,"Hello World");
-    
+    button b(f,"Hello World",100,100,[](){
+        std::cout << "hello\n";
+        return;
+    });
     bool running = true;
     float fps=240;
 
@@ -31,7 +35,7 @@ void cpRun(){
         handleinputs(running);
         SDL_RenderClear(cpGetRenderer());
         img.draw();
-        t.i.draw();
+        b.draw();
         SDL_RenderPresent(cpGetRenderer());
         
         cpKUpdate();
