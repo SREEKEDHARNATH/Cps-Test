@@ -4,10 +4,12 @@
 #include "SDL.h"
 #include "SDL_events.h"
 #include "SDL_image.h"
+#include "SDL_keyboard.h"
 #include "SDL_keycode.h"
 #include "SDL_mixer.h"
 #include "SDL_rect.h"
 #include "SDL_render.h"
+#include "SDL_scancode.h"
 #include "SDL_stdinc.h"
 #include "SDL_timer.h"
 #include "SDL_ttf.h"
@@ -16,26 +18,43 @@
 #include "listeners.hpp"
 #include "utils.hpp"
 #include <string>
+#include <utility>
+#include <vector>
 
 bool init();
 void handleinputs(bool& running);
 
+SDL_Scancode anyKeyPressed(){
+    for (int i=(int)SDL_SCANCODE_A;i<=(int)SDL_SCANCODE_Z;i++){
+        if (cpKIsPressed((SDL_Scancode)i)){
+            return (SDL_Scancode)i;
+        }
+    }
+    for (int i=(int)SDL_SCANCODE_1;i<=(int)SDL_SCANCODE_0;i++){
+        if (cpKIsPressed((SDL_Scancode)i)){
+            return (SDL_Scancode)i;
+        }
+    }
+    return (SDL_Scancode)0;
+}
 struct cpsSystem{
     int sec=5;
     int b=0;
-    SDL_KeyCode k=(SDL_KeyCode)0;
+    SDL_Keycode k=(SDL_Keycode)0;
     Uint64 ticks;
     cpImage clickarea;
     cpText t;
     cpText cps;
     cpText cpst;
     cpText tt;
+    cpImage blsq;
+    std::vector<std::pair<short, short>> sqs;
     int clicks=0;
     int fps=240;
     float cpsscore=0;
     float peakscore=0;
 
-    cpsSystem(cpFont& f) : clickarea(100,100,100),t(f,"0"), cps(f,"0"), cpst(f,"Cps"), tt(f,"Clicks"){
+    cpsSystem(cpFont& f) : blsq(0,255,255),clickarea(100,100,100),t(f,"0"), cps(f,"0"), cpst(f,"Cps"), tt(f,"Clicks"){
         clickarea.r.x=cpGetW()/5.0f;
         clickarea.r.y=cpGetH()/5.0f;
         clickarea.r.w=cpGetW()/1.5f;
@@ -43,15 +62,18 @@ struct cpsSystem{
         tt.i.r.x=60;
         cps.i.r.x=200;
         cpst.i.r.x=250;
+        blsq.r.w=16;
+        blsq.r.h=16;
     }
     bool update(cpFont& f){
         if (b == 0 && k != 0){
-            clicks+=(int)cpKIsPressed(k);
+            clicks+=(int)cpKIsPressed(SDL_GetScancodeFromKey(k));
         }
         else if (k==0 && b != 0){
             SDL_Rect mouse = {cpMGetX(),cpMGetY(),1,1};
             if (SDL_HasIntersection(&clickarea.r, &mouse)){
                 clicks+=(int)cpMIsPressed(b);
+                sqs.push_back({mouse.x,mouse.y});
             }
         }
         t.set(f, std::to_string(clicks).c_str());
@@ -66,7 +88,6 @@ struct cpsSystem{
         peakscore=(cp>peakscore ? cp : peakscore);
         if ((ticks + sec*1000) < (SDL_GetTicks64()-(fps/1000))){
             cpsscore=cp;
-            clicks=0;
             ticks=SDL_GetTicks64();
             return false;
         }
@@ -80,10 +101,17 @@ struct cpsSystem{
         if (k==0 && b != 0){
             clickarea.draw();
         }
+        for (auto& sq : sqs){
+            SDL_Rect s={sq.first,sq.second,8,8};
+            blsq.r=s;
+            blsq.draw();
+        }
     }
     void reset(){
-        k=(SDL_KeyCode)0;
+        k=(SDL_Keycode)0;
         b=0;
+        clicks=0;
+        sqs.clear();
     }
 };
 void cpRun(){
@@ -93,7 +121,8 @@ void cpRun(){
     }
 
     cpFont f("assets/font.ttf");
-    button buttons[12];
+    constexpr int size=12;
+    button buttons[size];
     buttons[0].set(f,"Left Click",100,100,1);
     buttons[1].set(f,"Middle Click",500,100,2);
     buttons[2].set(f,"Right Click",900,100,3);
@@ -107,11 +136,9 @@ void cpRun(){
         buttons[5].set(f,"A",x-gap,y+gap,SDLK_a,true);
         buttons[6].set(f,"S",x,y+(2*gap),SDLK_s,true);
         buttons[7].set(f,"D",x+gap,y+gap,SDLK_d,true);
-    }
-    {
-        int x=800;
-        int y=325;
-        int gap=80;
+        
+        x=800;
+        y=325;
         buttons[8].set(f,"^",x,y,SDLK_UP,true);
         buttons[9].set(f,"<",x-gap,y+gap,SDLK_LEFT,true);
         buttons[10].set(f,"v",x,y+(2*gap),SDLK_DOWN,true);
@@ -124,6 +151,9 @@ void cpRun(){
     float fps=240;
     bool start=false;
     sys.ticks=0;
+
+    int i=-1;
+    
     SDL_ShowWindow(cpGetWindow());
     while (running) {
         handleinputs(running);
@@ -136,6 +166,27 @@ void cpRun(){
             }
         }
         else {
+            if (cpKIsPressed(SDLK_BACKSPACE)){
+                i=-1;
+                for (int j=0;j<size;j++){
+                    buttons[j].select=false;
+                }
+            }
+            if (cpKIsPressed(SDLK_TAB)){
+                if (i==-1){
+                    i=0;
+                }
+                else {
+                    buttons[i].select=false;
+                    i++;
+                    if (i == size){
+                        i=0;
+                    }
+                }
+            }
+            if (i != -1){
+                buttons[i].select=true;
+            }
             for (auto& bu : buttons){
                 bu.draw();
             }
@@ -146,7 +197,7 @@ void cpRun(){
                 if (bu.haspressed()){
                     start=true;
                     if (bu.val > 3){
-                        sys.k=(SDL_KeyCode)bu.val;
+                        sys.k=(SDL_Keycode)bu.val;
                     }
                     else {
                         sys.b=bu.val;

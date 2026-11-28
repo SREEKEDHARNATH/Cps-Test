@@ -9,6 +9,7 @@ class button{
     void (*cb)();
     bool pressed=false;
     public:
+        bool select=false;
         int val;
         button();
         button(cpFont& f, const char* txt, int x,int y,int v,bool small=false,void (*callback)()=nullptr);

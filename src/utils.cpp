@@ -1,5 +1,5 @@
 #include "utils.hpp"
-#include "SDL_mouse.h"
+#include "SDL_keycode.h"
 #include "SDL_rect.h"
 #include "listeners.hpp"
 
@@ -63,8 +63,9 @@ void button::draw(){
     pressed=false;
     bg.draw();
     SDL_Rect mouse = {cpMGetX(),cpMGetY(),1,1};
-    if (SDL_HasIntersection(&mouse, &bg.r)){
-        if (cpMIsPressed(((val <= 0 || val > 3) ? SDL_BUTTON_LEFT : val))){
+    bool exception = (val > 3 ? cpKIsPressed((SDL_KeyCode)val): false);
+    if (SDL_HasIntersection(&mouse, &bg.r) || select || exception){
+        if ((cpMIsPressed(val)) || cpKIsPressed(SDLK_RETURN) || exception){
             pressed=true;
             if (cb){
                 cb();
