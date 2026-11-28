@@ -14,10 +14,10 @@ void cpKReg(SDL_KeyboardEvent k){
         keys[sc]=(k.state==SDL_PRESSED);
     }
 }
-bool cpKIsPresed(SDL_KeyCode k){
-    return cpKIsPresed(SDL_GetScancodeFromKey(k));
+bool cpKIsPressed(SDL_KeyCode k){
+    return cpKIsPressed(SDL_GetScancodeFromKey(k));
 }
-bool cpKIsPresed(SDL_Scancode sc){
+bool cpKIsPressed(SDL_Scancode sc){
     if (sc > 0 && sc < SDL_NUM_SCANCODES){
         return keys[sc] && !prvkeys[sc];
     }

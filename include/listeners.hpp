@@ -4,8 +4,8 @@
 #include "SDL_keycode.h"
 #include "SDL_scancode.h"
 void cpKReg(SDL_KeyboardEvent k);
-bool cpKIsPresed(SDL_KeyCode k);
-bool cpKIsPresed(SDL_Scancode sc);
+bool cpKIsPressed(SDL_KeyCode k);
+bool cpKIsPressed(SDL_Scancode sc);
 bool cpKIsDown(SDL_KeyCode k);
 bool cpKIsDown(SDL_Scancode sc);
 void cpKUpdate();

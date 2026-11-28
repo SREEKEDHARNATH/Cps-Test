@@ -3,13 +3,25 @@
 #include "SDL_rect.h"
 #include "listeners.hpp"
 
-button::button(cpFont& f, const char* txt, int x,int y,void (*callback)()){
+button::button(){
+
+}
+button::button(cpFont& f, const char* txt, int x,int y,int v,bool small,void (*callback)()){
+    set(f,txt,x,y,v,small,callback);
+}
+void button::set(cpFont& f, const char* txt, int x,int y,int v,bool small,void (*callback)()){
+    val=v;
     cb=callback;
     bg.set(50, 50,50);
     bg.r.x=x;
     bg.r.y=y;
-    bg.r.w=192;
     bg.r.h=64;
+    if (small){
+        bg.r.w=64;
+    }
+    else {
+        bg.r.w=192;
+    }
     int wi=3;
     for (int i=0;i<4;i++){
         nonglow[i].set(255, 255,255);
@@ -40,6 +52,11 @@ button::button(cpFont& f, const char* txt, int x,int y,void (*callback)()){
     while ((t.i.r.w > (bg.r.w-wi)) || (t.i.r.h > (bg.r.h-wi))){
         t.i.r.w/=1.1;
         t.i.r.h/=1.1;
+    }
+    auto& r = t.i.r;
+    while (((r.x*2)+r.w < (bg.r.x*2)+bg.r.w) && ((r.y*2)+r.h < (bg.r.x*2)+bg.r.w)){
+        t.i.r.x+=1;
+        t.i.r.y+=1;
     }
 }
 void button::draw(){

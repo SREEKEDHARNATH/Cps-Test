@@ -10,7 +10,9 @@ class button{
     bool pressed=false;
     public:
         int val;
-        button(cpFont& f, const char* txt, int x,int y,void (*callback)()=nullptr);
+        button();
+        button(cpFont& f, const char* txt, int x,int y,int v,bool small=false,void (*callback)()=nullptr);
+        void set(cpFont& f, const char* txt, int x,int y,int v,bool small=false,void (*callback)()=nullptr);
         void draw();
         bool haspressed();
 };
