@@ -47,9 +47,11 @@ void button::draw(){
     bg.draw();
     SDL_Rect mouse = {cpMGetX(),cpMGetY(),1,1};
     if (SDL_HasIntersection(&mouse, &bg.r)){
-        if (cpMIsPressed(SDL_BUTTON_LEFT)){
+        if (cpMIsPressed(((val <= 0 || val > 3) ? SDL_BUTTON_LEFT : val))){
             pressed=true;
-            cb();
+            if (cb){
+                cb();
+            }
         }
         for (auto& i : glow){
             i.draw();
