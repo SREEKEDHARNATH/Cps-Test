@@ -11,6 +11,7 @@
 #include "SDL_render.h"
 #include "SDL_scancode.h"
 #include "SDL_stdinc.h"
+#include "SDL_surface.h"
 #include "SDL_timer.h"
 #include "SDL_ttf.h"
 #include "SDL_video.h"
@@ -308,6 +309,7 @@ void handleinputs(bool& running){
         running=false;
     }
 }
+SDL_Surface* surf;
 bool init(){
     int img_flags=IMG_INIT_JPG | IMG_INIT_PNG;
     int sound_flags=MIX_INIT_MP3;
@@ -332,6 +334,12 @@ bool init(){
     if (!(cpGetRenderer() = SDL_CreateRenderer(cpGetWindow(),-1,0))){
         return false;
     }
+    surf=IMG_Load("assets/icon.png");
+    if (!surf){
+        LOGARGS("Icon loading failed");
+        return false;
+    }
+    SDL_SetWindowIcon(cpGetWindow(), surf);
     return true;
 }
 void cpQuit(){
@@ -340,6 +348,9 @@ void cpQuit(){
     }
     if (cpGetWindow()){
         SDL_DestroyWindow(cpGetWindow());
+    }
+    if (surf){
+        SDL_FreeSurface(surf);
     }
     Mix_CloseAudio();
     Mix_Quit();
