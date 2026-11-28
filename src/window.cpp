@@ -47,6 +47,7 @@ struct cpsSystem{
     cpText cps;
     cpText cpst;
     cpText tt;
+    cpText timerem;
     cpImage blsq;
     std::vector<std::pair<short, short>> sqs;
     int clicks=0;
@@ -54,7 +55,7 @@ struct cpsSystem{
     float cpsscore=0;
     float peakscore=0;
 
-    cpsSystem(cpFont& f) : blsq(0,255,255),clickarea(100,100,100),t(f,"0"), cps(f,"0"), cpst(f,"Cps"), tt(f,"Clicks"){
+    cpsSystem(cpFont& f) : timerem(f,"0"),blsq(0,255,255),clickarea(100,100,100),t(f,"0"), cps(f,"0"), cpst(f,"Cps"), tt(f,"Clicks"){
         clickarea.r.x=cpGetW()/5.0f;
         clickarea.r.y=cpGetH()/5.0f;
         clickarea.r.w=cpGetW()/1.5f;
@@ -64,16 +65,40 @@ struct cpsSystem{
         cpst.i.r.x=250;
         blsq.r.w=16;
         blsq.r.h=16;
+        timerem.i.r.x=cpGetW()-100;
     }
     bool update(cpFont& f){
+        static auto start = SDL_GetTicks64();
+        static auto remsec=sec;
+        static cpSound click("assets/click.mp3");
+        if (remsec==0){
+            remsec=sec;
+            start = SDL_GetTicks64();
+        }
+        if (remsec==sec){
+            timerem.set(f, std::to_string(remsec).c_str());
+        }
+        if (SDL_GetTicks64()-start > 1000){
+            remsec--;
+            start = SDL_GetTicks64();
+            timerem.set(f, std::to_string(remsec).c_str());
+        }
         if (b == 0 && k != 0){
-            clicks+=(int)cpKIsPressed(SDL_GetScancodeFromKey(k));
+            auto bo=cpKIsPressed(SDL_GetScancodeFromKey(k));
+            clicks+=(int)bo;
+            if (bo){
+                click.play();
+            }
         }
         else if (k==0 && b != 0){
             SDL_Rect mouse = {cpMGetX(),cpMGetY(),1,1};
             if (SDL_HasIntersection(&clickarea.r, &mouse)){
-                clicks+=(int)cpMIsPressed(b);
+                auto bo=cpMIsPressed(b);;
+                clicks+=(int)bo;
                 sqs.push_back({mouse.x,mouse.y});
+                if (bo){
+                    click.play();
+                }
             }
         }
         t.set(f, std::to_string(clicks).c_str());
@@ -82,7 +107,7 @@ struct cpsSystem{
         if (dt != st.npos){
             st=st.substr(0,dt+2);
         }
-        cps.set(f, st.c_str());
+        cps.set(f, st.c_str());;
 
         auto cp=std::stof(st);
         peakscore=(cp>peakscore ? cp : peakscore);
@@ -98,6 +123,7 @@ struct cpsSystem{
         cps.i.draw();
         cpst.i.draw();
         tt.i.draw();
+        timerem.i.draw();
         if (k==0 && b != 0){
             clickarea.draw();
         }
@@ -113,6 +139,10 @@ struct cpsSystem{
         clicks=0;
         sqs.clear();
     }
+    void clearresult(){
+        cpsscore=0;
+        peakscore=0;
+    }
 };
 void cpRun(){
     if (!init()){
@@ -127,7 +157,7 @@ void cpRun(){
     buttons[1].set(f,"Middle Click",500,100,2);
     buttons[2].set(f,"Right Click",900,100,3);
 
-    buttons[3].set(f,"Space",150,300,1);
+    buttons[3].set(f,"Space",150,300,SDLK_SPACE);
     {
         int x=500;
         int y=325;
@@ -145,6 +175,11 @@ void cpRun(){
         buttons[11].set(f,">",x+gap,y+gap,SDLK_RIGHT,true);
     }
     
+    button time[3];
+    time[0].set(f, "1 sec", 100, 600, 1,true);
+    time[1].set(f, "5 sec", 200, 600, 1,true);
+    time[2].set(f, "10 sec", 300, 600, 1,true);
+    
     cpsSystem sys(f);
 
     bool running = true;
@@ -153,7 +188,7 @@ void cpRun(){
     sys.ticks=0;
 
     int i=-1;
-    
+    cpText info(f,"Play");
     SDL_ShowWindow(cpGetWindow());
     while (running) {
         handleinputs(running);
@@ -163,6 +198,26 @@ void cpRun(){
             sys.draw();
             if (!start){
                 sys.reset();
+                std::string peak = std::format("{:.1f}",sys.peakscore) + std::string(" cps");
+                if (sys.cpsscore < 2){
+                    info.set(f, (std::string("Do you know how to click/press? and your peak score is: ") + peak).c_str());
+                }
+                else if(sys.cpsscore < 4){
+                    info.set(f,(std::string("Just started to click/press right and your peak score is: ")+peak).c_str());
+                }
+                else if (sys.cpsscore < 6){
+                    info.set(f, (std::string("Great a little experienced and your peak score is: ")+peak).c_str());
+                }
+                else if (sys.cpsscore < 8){
+                    info.set(f, (std::string("nice and your peak score is: ")+peak).c_str());
+                }
+                else if (sys.cpsscore < 10){
+                    info.set(f, (std::string("You have been grinding a lot and your peak score is: ")+peak).c_str());
+                }
+                else {
+                    info.set(f, (std::string("auto clicker, cheater! and your peak score is: ") + peak).c_str());
+                }
+                sys.clearresult();
             }
         }
         else {
@@ -190,6 +245,10 @@ void cpRun(){
             for (auto& bu : buttons){
                 bu.draw();
             }
+            for (auto& t : time){
+                t.draw();
+            }
+            info.i.draw();
         }
         SDL_RenderPresent(cpGetRenderer());
         if (!start && ((sys.ticks + 3000) < SDL_GetTicks64())){
@@ -205,6 +264,17 @@ void cpRun(){
                     sys.ticks = SDL_GetTicks64();
                 }    
             }
+            for (int t=0;t<3;t++){
+                if (time[t].haspressed()){
+                    time[0].strictglow=false;
+                    time[1].strictglow=false;
+                    time[2].strictglow=false;
+                    time[t].strictglow=true;
+                    sys.sec=std::stoi(time[t].t.getText());
+                    break;
+                }
+            }
+            
         }
         cpKUpdate();
         cpMUpdate();

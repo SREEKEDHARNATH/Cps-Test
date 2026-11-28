@@ -63,7 +63,7 @@ void button::draw(){
     pressed=false;
     bg.draw();
     SDL_Rect mouse = {cpMGetX(),cpMGetY(),1,1};
-    bool exception = (val > 3 ? cpKIsPressed((SDL_KeyCode)val): false);
+    bool exception = (val > 3 ? cpKIsPressed((SDL_KeyCode)val) : false);
     if (SDL_HasIntersection(&mouse, &bg.r) || select || exception){
         if ((cpMIsPressed(val)) || cpKIsPressed(SDLK_RETURN) || exception){
             pressed=true;
@@ -76,7 +76,7 @@ void button::draw(){
         }
     }
     else {
-        for (auto& i : nonglow){
+        for (auto& i : (strictglow ? glow : nonglow)){
             i.draw();
         }
     }

@@ -5,11 +5,12 @@ class button{
     cpImage nonglow[4];
     cpImage glow[4];
     cpImage bg;
-    cpText t;
     void (*cb)();
-    bool pressed=false;
     public:
+        bool pressed=false;
+        cpText t;
         bool select=false;
+        bool strictglow=false;
         int val;
         button();
         button(cpFont& f, const char* txt, int x,int y,int v,bool small=false,void (*callback)()=nullptr);

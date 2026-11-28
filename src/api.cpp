@@ -137,6 +137,7 @@ void cpText::set(cpFont& f,const char* txt){
         return;
     }
     i.set(tex);
+    text=txt;
     if ((i.r.x+i.r.w) > cpGetW()){
         LOGARGS("Text is overlapping than window's width");
     }
